@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Kerub · overlay</title>
+  <link rel="stylesheet" href="overlay.css">
+  <script src="shared.js" defer></script>
+  <script src="overlay.js" defer></script>
+</head>
+<body>
+  <div id="meter" class="meter">
+    <header>
+      <h1><span class="title">Medidor de dano</span> <span id="timer">(0:00)</span> <span id="ping" class="ping" title="Ping com o servidor do jogo" hidden></span></h1>
+      <div class="actions">
+        <button id="mode" class="pill" title="Qual alvo medir">Chefe</button>
+        <button id="scale" class="icon" title="Tamanho do texto" aria-label="Tamanho do texto">Aa</button>
+        <button id="opacity" class="icon" title="Transparência do fundo" aria-label="Transparência do fundo">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path class="fill" d="M12 3.5a8.5 8.5 0 0 1 0 17z"/></svg>
+        </button>
+        <button id="print" class="icon" title="Print do overlay: copia a imagem e salva em Imagens\Kerub" aria-label="Print do overlay">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h3.5l2-3h7l2 3H21v12H3z"/><circle cx="12" cy="13.5" r="3.6"/></svg>
+        </button>
+        <button id="reset" class="icon" title="Zerar luta" aria-label="Zerar luta">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+        </button>
+        <button id="client" class="icon" title="Abrir o client (histórico e escolhas)" aria-label="Abrir o client">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/></svg>
+        </button>
+        <button id="lock" class="icon" title="Travar posição" aria-label="Travar posição">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path id="shackle" d="M8 11V7a4 4 0 0 1 8 0"/></svg>
+        </button>
+        <button id="close" class="icon" title="Fechar o overlay (o client continua gravando)" aria-label="Fechar o overlay">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="boss" class="boss" hidden>
+      <div class="boss-line">
+        <span id="target"></span>
+        <span id="hp-pct"></span>
+      </div>
+      <div id="hp" class="hp"><div id="hp-fill"></div></div>
+      <div id="time-left" class="time-left" hidden></div>
+    </div>
+
+    <div class="totals">
+      <span class="total-damage">Dano total <b id="total-damage">0</b></span>
+      <span class="total-dps"><b id="total-dps">0</b> DPS</span>
+    </div>
+
+    <div class="table">
+      <div id="thead" class="thead"></div>
+      <ol id="rows"></ol>
+    </div>
+
+    <section id="details" class="details" hidden aria-live="polite">
+      <div class="details-head">
+        <span id="details-badge"></span>
+        <div class="details-who">
+          <b id="details-name"></b>
+          <span id="details-sub"></span>
+        </div>
+        <button id="details-close" class="icon" title="Fechar detalhes" aria-label="Fechar detalhes">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <ol id="skills" class="skills"></ol>
+    </section>
+
+    <footer id="status" hidden>
+      <span id="status-text"></span>
+      <button id="install-npcap" class="pill" hidden>Instalar Npcap</button>
+    </footer>
+    <div id="grip" class="grip" title="Largura"></div>
+  </div>
+</body>
+</html>

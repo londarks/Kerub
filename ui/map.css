@@ -1,0 +1,479 @@
+/* Mapa de Atreia: painel à esquerda (mapas, busca e camadas) e o mapa no
+   resto da área, sem margem. Mesmas cores do client; o azul marca o que está
+   ligado ou escolhido. */
+
+main.flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+.map-page {
+  display: grid;
+  grid-template-columns: 19rem minmax(0, 1fr);
+  gap: 0;
+  max-width: none;
+  height: 100%;
+  margin: 0;
+}
+
+/* ── painel ────────────────────────────────────────────── */
+
+.map-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+}
+
+.map-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.1rem 1rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.map-head h2 {
+  font-size: 1.35rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.map-head .segmented {
+  display: flex;
+}
+
+.map-head .segment {
+  flex: 1;
+  padding-inline: 0.4rem;
+}
+
+.map-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.map-chip {
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 1rem;
+  background: var(--surface);
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.map-chip:hover {
+  color: var(--text);
+  border-color: #3d4450;
+}
+
+.map-chip[aria-pressed="true"] {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.map-search {
+  width: 100%;
+}
+
+.map-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.6rem 0.75rem 1.2rem;
+}
+
+.map-label {
+  display: block;
+  margin: 0.5rem 0.25rem 0.35rem;
+  color: var(--label);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.map-count {
+  margin-left: auto;
+  color: var(--label);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Camadas */
+
+.map-layers-head {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding-right: 0.25rem;
+}
+
+.map-layers-head .map-label {
+  margin-right: auto;
+}
+
+.map-layers-head .link {
+  font-size: 0.85rem;
+}
+
+.map-group {
+  margin-top: 0.55rem;
+  padding: 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.map-group h3 {
+  display: flex;
+  align-items: center;
+  padding: 0.25rem 0.45rem 0.3rem;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.map-layer-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.map-layer {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 2.15rem;
+  padding: 0.25rem 0.45rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--label);
+  text-align: left;
+}
+
+.map-layer:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.map-layer[aria-pressed="true"] {
+  color: var(--text);
+}
+
+/* O quadradinho de marcar: cheio e azul quando a camada aparece no mapa. */
+.map-check {
+  flex: none;
+  position: relative;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #5d6573;
+  border-radius: 0.25rem;
+}
+
+.map-layer[aria-pressed="true"] .map-check {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+}
+
+.map-layer[aria-pressed="true"] .map-check::after {
+  content: "";
+  position: absolute;
+  left: 0.26rem;
+  top: 0.06rem;
+  width: 0.28rem;
+  height: 0.55rem;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.map-layer-icon,
+.map-dot {
+  flex: none;
+  width: 1.35rem;
+  height: 1.35rem;
+  object-fit: contain;
+}
+
+.map-layer[aria-pressed="false"] .map-layer-icon,
+.map-layer[aria-pressed="false"] .map-dot {
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+
+.map-dot {
+  display: grid;
+  place-items: center;
+}
+
+.map-dot::before {
+  content: "";
+  width: 0.7rem;
+  height: 0.7rem;
+  border: 2px solid #0a0c10;
+  border-radius: 50%;
+  background: var(--dot, #9ec5ff);
+}
+
+.map-layer-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 550;
+}
+
+.map-sk {
+  width: 100%;
+  height: 2.4rem;
+}
+
+.map-layers .skeletons {
+  flex-direction: column;
+  padding-top: 0.5rem;
+}
+
+/* Busca */
+
+.map-result {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.45rem 0.5rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  text-align: left;
+}
+
+.map-result:hover,
+.map-result:focus-visible {
+  background: var(--surface-2);
+}
+
+.map-result-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.map-result-text b,
+.map-result-text small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-result-text b {
+  font-weight: 600;
+}
+
+.map-result-text small {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.map-result-icon.area {
+  flex: none;
+  width: 1.35rem;
+  height: 1.35rem;
+  border: 2px solid var(--accent);
+  border-radius: 0.3rem;
+  background: var(--accent-soft);
+}
+
+.map-none {
+  padding: 1rem 0.4rem;
+  color: var(--muted);
+}
+
+/* ── mapa ──────────────────────────────────────────────── */
+
+.map-stage {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #0e1014;
+}
+
+#map-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  cursor: grab;
+  touch-action: none;
+}
+
+#map-canvas:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.map-tools {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: #14171c;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
+}
+
+.map-tool {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0;
+  background: none;
+  color: var(--text);
+}
+
+.map-tool + .map-tool {
+  border-top: 1px solid var(--border);
+}
+
+.map-tool:hover {
+  background: var(--surface-3);
+}
+
+.map-tool svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* "Só Kerubiel da Eternidade (3) ✕" em cima do mapa. */
+.map-filter {
+  position: absolute;
+  top: 0.9rem;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: calc(100% - 8rem);
+  padding: 0.35rem 0.4rem 0.35rem 0.85rem;
+  border: 1px solid var(--accent-line);
+  border-radius: 1.2rem;
+  background: #14171c;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.map-filter > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.map-filter-close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.7rem;
+  height: 1.7rem;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--text);
+  font-size: 0.8rem;
+}
+
+.map-filter-close:hover {
+  background: #2c323c;
+}
+
+/* O quadro do ponto: fundo opaco, texto grande o bastante. */
+.map-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  max-width: 20rem;
+  padding: 0.55rem 0.8rem 0.6rem 0.6rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: #161a20;
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.55);
+  pointer-events: none;
+  will-change: transform;
+}
+
+.map-tip .map-layer-icon,
+.map-tip .map-dot {
+  width: 1.7rem;
+  height: 1.7rem;
+}
+
+.map-tip-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.map-tip-text b {
+  font-weight: 650;
+}
+
+.map-tip-text span {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.map-tip-text small {
+  color: var(--label);
+  font-size: 0.8rem;
+}
+
+.map-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.map-loading .spinner {
+  padding: 1.1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: #14171c;
+}
+
+.map-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(26rem, calc(100% - 2rem));
+  padding: 1.3rem 1.4rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: #14171c;
+  transform: translate(-50%, -50%);
+}
+
+.map-error h3 {
+  margin-bottom: 0.4rem;
+  font-size: 1.1rem;
+}
+
+.map-error p {
+  margin: 0 0 1rem;
+  color: var(--muted);
+}

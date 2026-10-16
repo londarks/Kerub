@@ -1,0 +1,1998 @@
+/* Client: escuro, sóbrio e de alto contraste. Grafite levemente frio, um azul
+   só para o que é clicável ou escolhido, e cor de verdade só nos dados
+   (classe, raridade). Contrastes medidos: texto 15:1, texto secundário 8:1,
+   rótulos 6:1, azul 6,6:1; nada de amarelo. Tudo em rem: o botão de texto
+   muda --scale e a janela inteira cresce junto. */
+
+:root {
+  color-scheme: dark;
+  --scale: 1;
+
+  --bg: #0e1014;
+  /* Barra de título e lateral: a mesma cor, para parecer uma peça só. */
+  --chrome: #0b0d10;
+  --surface: #14171c;
+  --surface-2: #1a1e24;
+  --surface-3: #21262e;
+  --border: #252a32;
+  --border-strong: #323843;
+
+  --text: #eceef1;
+  --muted: #aab0ba;
+  --label: #959ca7;
+
+  --accent: #5b9dff;
+  /* Botão principal: texto branco a 5,2:1. */
+  --accent-strong: #2563eb;
+  --accent-soft: rgb(91 157 255 / 0.12);
+  --accent-line: rgb(91 157 255 / 0.45);
+
+  --ok: #4ade80;
+  --taken: #ff9b9b;
+  --danger: #ff8a8a;
+
+  --radius: 0.7rem;
+  --radius-sm: 0.5rem;
+
+  /* Nomes antigos, ainda usados em chars.css. */
+  --panel: var(--surface);
+  --panel-2: var(--surface-2);
+  --line: var(--border);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  font-size: calc(15px * var(--scale));
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  overflow: hidden;
+}
+
+::selection {
+  background: rgb(91 157 255 / 0.35);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+}
+
+/* Rolagem fina, da cor das bordas. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.small {
+  font-size: 0.88rem;
+}
+
+.hint {
+  margin: 0;
+  color: var(--muted);
+  max-width: 60rem;
+}
+
+/* ── botões e controles ────────────────────────────────── */
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  height: 2.3rem;
+  padding: 0 0.95rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.button:hover {
+  background: var(--surface-3);
+  border-color: #3d4450;
+}
+
+.button.primary {
+  border-color: transparent;
+  background: var(--accent-strong);
+  color: #ffffff;
+}
+
+.button.primary:hover {
+  background: #3b75ee;
+}
+
+.button.danger {
+  color: var(--danger);
+}
+
+.icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--muted);
+}
+
+.icon-button:hover {
+  border-color: var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.icon-button svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-weight: 600;
+  text-align: left;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+/* Etiqueta pequena (estado, raça, nível de item). */
+.pill,
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.12rem 0.55rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.4rem;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chip b {
+  color: var(--text);
+}
+
+.pill.ok {
+  border-color: rgb(74 222 128 / 0.35);
+  color: var(--ok);
+}
+
+.pill.best {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.tag {
+  margin-left: 0.45rem;
+  padding: 0.05rem 0.4rem;
+  border: 1px solid var(--accent-line);
+  border-radius: 0.3rem;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  vertical-align: 0.15em;
+}
+
+.count {
+  margin-left: 0.5rem;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.9em;
+}
+
+/* Interruptor. */
+.switch,
+.check,
+.field {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.field {
+  cursor: default;
+  flex-wrap: wrap;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.switch .track {
+  flex: none;
+  position: relative;
+  width: 2.35rem;
+  height: 1.3rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 1rem;
+  background: var(--surface-3);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.switch .track::after {
+  content: "";
+  position: absolute;
+  top: 0.13rem;
+  left: 0.15rem;
+  width: 0.95rem;
+  height: 0.95rem;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: transform 0.15s, background 0.15s;
+}
+
+.switch input:checked + .track {
+  border-color: transparent;
+  background: var(--accent-strong);
+}
+
+.switch input:checked + .track::after {
+  transform: translateX(1.03rem);
+  background: #ffffff;
+}
+
+.switch input:focus-visible + .track {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.check input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--accent-strong);
+}
+
+/* Botões lado a lado, um escolhido (o que medir, quantos jogadores). */
+.segmented {
+  display: inline-flex;
+  gap: 0.15rem;
+  padding: 0.2rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--surface);
+}
+
+.segment {
+  padding: 0.32rem 0.85rem;
+  border: 0;
+  border-radius: 0.42rem;
+  background: none;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.segment:hover {
+  color: var(--text);
+}
+
+.segment[aria-checked="true"] {
+  background: var(--surface-3);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+
+/* Campo de busca pequeno (filtro do histórico). */
+.field-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 18rem;
+  height: 2.3rem;
+  padding: 0 0.7rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: text;
+}
+
+.field-search:focus-within {
+  border-color: var(--accent);
+}
+
+.field-search svg {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+.field-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--text);
+  font: inherit;
+}
+
+.field-search input::placeholder,
+.tb-search input::placeholder {
+  color: #8d94a0;
+}
+
+/* ── carregando ────────────────────────────────────────── */
+
+.spin {
+  display: inline-block;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+.spinner {
+  display: grid;
+  place-items: center;
+  padding: 2.5rem 0;
+}
+
+.spinner .spin {
+  width: 2rem;
+  height: 2rem;
+  border-width: 3px;
+}
+
+.spinner.small {
+  padding: 0.8rem 0 0.2rem;
+}
+
+.spinner.small .spin {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-width: 2px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.skeletons {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.skeleton {
+  display: block;
+  border-radius: 0.4rem;
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin,
+  .skeleton {
+    animation-duration: 3s;
+  }
+}
+
+/* ── layout ────────────────────────────────────────────── */
+
+.app {
+  display: grid;
+  grid-template-columns: 14rem minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
+}
+
+/* ── barra de título ───────────────────────────────────── */
+
+.titlebar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 3.1rem;
+  padding-left: 1rem;
+  background: var(--chrome);
+  border-bottom: 1px solid var(--border);
+  user-select: none;
+}
+
+/* Arrastar só funciona no elemento marcado, não nos filhos dele. */
+.tb-brand > *,
+.tb-status > * {
+  pointer-events: none;
+}
+
+.tb-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 12.4rem;
+  flex: none;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.tb-brand img {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.tb-nav {
+  display: flex;
+  gap: 0.1rem;
+}
+
+.tb-icon {
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--muted);
+}
+
+.tb-icon:hover:not(:disabled) {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.tb-icon:disabled {
+  color: #4b525e;
+}
+
+.tb-icon svg,
+.tb-search-icon svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Busca de personagem, com a região num menu à direita. */
+.tb-search {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: min(30rem, 40%);
+  height: 2.2rem;
+  margin: 0;
+  padding: 0 0.25rem 0 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.tb-search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.tb-search-icon {
+  display: grid;
+  place-items: center;
+  width: 1.1rem;
+}
+
+.tb-search-icon .spin {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.tb-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--text);
+  font: inherit;
+}
+
+.tb-region {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 1.7rem;
+  padding: 0 0.45rem 0 0.6rem;
+  border: 0;
+  border-left: 1px solid var(--border-strong);
+  border-radius: 0 0.35rem 0.35rem 0;
+  background: none;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.tb-region:hover,
+.tb-region[aria-expanded="true"] {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.tb-region svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Menu suspenso (região). */
+.menu {
+  position: fixed;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  min-width: 15rem;
+  padding: 0.3rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: #161a20;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.55);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0.7rem;
+  border: 0;
+  border-radius: 0.4rem;
+  background: none;
+  color: var(--text);
+  font-weight: 500;
+  text-align: left;
+}
+
+.menu-item:hover,
+.menu-item:focus-visible {
+  background: var(--surface-3);
+  outline: none;
+}
+
+.menu-item[aria-selected="true"] {
+  color: var(--accent);
+  font-weight: 650;
+}
+
+.tb-fill {
+  flex: 1;
+  align-self: stretch;
+}
+
+/* "AION 2 aberto", como o "Aion 2 is running" da referência. */
+.tb-status {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.22rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tb-status .dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: #6b7280;
+}
+
+.tb-status[data-state="on"] {
+  color: var(--text);
+}
+
+.tb-status[data-state="on"] .dot {
+  background: var(--ok);
+  box-shadow: 0 0 0 3px rgb(74 222 128 / 0.15);
+}
+
+.tb-status[data-state="wait"] .dot {
+  background: var(--accent);
+}
+
+.tb-status[data-state="off"] .dot {
+  background: var(--danger);
+}
+
+.tb-button {
+  height: 2rem;
+}
+
+/* Minimizar, maximizar e fechar, do tamanho dos do Windows. */
+.tb-controls {
+  display: flex;
+  align-self: stretch;
+  margin-left: 0.3rem;
+}
+
+.tb-controls button {
+  display: grid;
+  place-items: center;
+  width: 3.1rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+}
+
+.tb-controls svg {
+  width: 0.7rem;
+  height: 0.7rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.1;
+}
+
+.tb-controls button:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+/* Vermelho do Windows com o X branco: 5,9:1. */
+.tb-controls .close:hover {
+  background: #c42b1c;
+  color: #ffffff;
+}
+
+/* ── lateral ───────────────────────────────────────────── */
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.9rem 0.75rem;
+  background: var(--chrome);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.side-label {
+  margin: 1rem 0.65rem 0.3rem;
+  color: var(--label);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.side-label:first-child {
+  margin-top: 0.1rem;
+}
+
+.nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 0.65rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--muted);
+  font-weight: 600;
+  text-align: left;
+}
+
+.nav svg {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nav:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.nav.on {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.nav.on::before {
+  content: "";
+  position: absolute;
+  left: -0.75rem;
+  top: 0.45rem;
+  bottom: 0.45rem;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+
+.side-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: auto;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--border);
+}
+
+.side-foot .switch {
+  padding: 0.5rem 0.65rem;
+  color: var(--muted);
+}
+
+/* ── páginas ───────────────────────────────────────────── */
+
+main {
+  overflow-y: auto;
+  padding: 1.6rem 2rem 3rem;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  max-width: 88rem;
+  margin: 0 auto;
+}
+
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.8rem 1.2rem;
+}
+
+.page-head h2 {
+  font-size: 1.55rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.page-sub {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+}
+
+.empty-state {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+.empty-state h2 {
+  margin-bottom: 0.4rem;
+  color: var(--text);
+  font-size: 1.25rem;
+  font-weight: 650;
+}
+
+.empty-state p {
+  max-width: 34rem;
+  margin: 0 auto 1rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.card h3 {
+  font-size: 1.05rem;
+  font-weight: 650;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* ── ícone da classe ───────────────────────────────────── */
+
+.badge {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.45rem;
+  background: #090a0d;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ring, #6b7280) 70%, transparent);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.badge img {
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1px #000);
+}
+
+.badge.small {
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 0.35rem;
+}
+
+.badge.small img {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.who .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 650;
+}
+
+/* ── uma luta ──────────────────────────────────────────── */
+
+.fight {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.fight-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.fight-head h2 {
+  font-size: 1.65rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.fight-head .sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Números da luta: um quadro dividido, como na referência. A última linha
+   estica para não sobrar buraco quando os quadros quebram de linha. */
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--border);
+  overflow: hidden;
+}
+
+.cards > .stat {
+  flex: 1 1 10rem;
+}
+
+.cards.small > .stat {
+  flex-basis: 7.5rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.8rem 1rem;
+  background: var(--surface);
+}
+
+.stat .label {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.stat b {
+  font-size: 1.45rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.cards.small .stat b {
+  font-size: 1.2rem;
+}
+
+.stat .note {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.stat.accent b {
+  color: var(--accent);
+}
+
+.stat.taken b {
+  color: var(--taken);
+}
+
+.live-boss:empty {
+  display: none;
+}
+
+.hp-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.hp {
+  height: 0.55rem;
+  border-radius: 0.3rem;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.hp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #b91c1c, #ea580c);
+  transition: width 0.3s linear;
+}
+
+/* Abas sublinhadas. */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  margin-bottom: -1px;
+  padding: 0.6rem 0.9rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tab[aria-selected="true"] {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+/* Jogadores em cima e as skills do escolhido embaixo; lado a lado só em tela
+   bem larga, para os nomes não serem cortados. */
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.1rem;
+  align-items: start;
+}
+
+@media (min-width: 1750px) {
+  .split {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  }
+}
+
+/* Tabela de jogadores: fundo neutro, uma faixa da cor da classe à esquerda e
+   a barra de proporção em tom baixo, para a cor não tomar a tela. */
+.ptable,
+.stable {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.prow {
+  --c: #3f3f46;
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.4rem minmax(0, 1fr) repeat(var(--cols), 5.5rem);
+  align-items: center;
+  column-gap: 0.6rem;
+  min-height: 2.75rem;
+  padding: 0.25rem 0.9rem 0.25rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+.prow.head {
+  min-height: 0;
+  padding: 0 0.9rem 0.35rem 3.15rem;
+  grid-template-columns: minmax(0, 1fr) repeat(var(--cols), 5.5rem);
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: none;
+  color: var(--label);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.prow > span:not(.bg) {
+  position: relative;
+}
+
+.prow .num,
+.prow.head span:not(:first-child),
+.srow .num,
+.srow.head span:not(:first-child) {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.prow .num {
+  font-weight: 600;
+}
+
+.prow .rank {
+  color: var(--muted);
+  font-weight: 700;
+  text-align: center;
+}
+
+.bg {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 3px 0 0 var(--c);
+}
+
+.bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--c) 32%, transparent), color-mix(in srgb, var(--c) 12%, transparent));
+}
+
+button.prow:hover {
+  border-color: var(--border-strong);
+}
+
+button.prow:hover .bar {
+  filter: brightness(1.2);
+}
+
+.prow.me {
+  border-color: #6b7280;
+}
+
+.prow.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* Painel de um jogador e as skills dele. */
+.player-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.pp-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pp-head .badge {
+  width: 2.6rem;
+  height: 2.6rem;
+}
+
+.pp-head .badge img {
+  width: 2rem;
+  height: 2rem;
+}
+
+.pp-head h3 {
+  font-size: 1.3rem;
+  font-weight: 650;
+}
+
+.srow {
+  --c: #3f3f46;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(13rem, 1fr) repeat(var(--cols), 5rem);
+  align-items: center;
+  column-gap: 0.5rem;
+  min-height: 2.5rem;
+  padding: 0.15rem 0.8rem 0.15rem 0.45rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+.srow .bg {
+  box-shadow: none;
+}
+
+.srow.head {
+  min-height: 0;
+  padding: 0 0.8rem 0.35rem 0.45rem;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: none;
+  color: var(--label);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.srow > span:not(.bg) {
+  position: relative;
+}
+
+.srow .num {
+  font-weight: 600;
+}
+
+.skill {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+  font-weight: 600;
+}
+
+.skill .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.skill-icon {
+  flex: none;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 0.35rem;
+  object-fit: cover;
+  background: #090a0d;
+}
+
+.skill-icon.none {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+
+/* ── linha do tempo (gráfico, buffs e skills) ──────────── */
+
+.ftl {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-top: 1rem;
+  padding: 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.ftl-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.ftl-sections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.ftl-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem 0.8rem;
+}
+
+.ftl-title h3 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.ftl-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.3rem;
+}
+
+.ftl-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ftl-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.ftl-head h4 {
+  font-size: 1.02rem;
+  font-weight: 650;
+}
+
+.ftl-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1rem;
+}
+
+.ftl-pick {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.ftl-plot {
+  position: relative;
+}
+
+.ftl-plot svg {
+  display: block;
+}
+
+.ftl-plot .grid {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.ftl-plot .axis {
+  fill: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Nome à esquerda, a faixa do tempo no meio e o número à direita: as
+   larguras são as do gráfico, para o tempo bater em todas as partes. */
+.ftl-row {
+  display: grid;
+  grid-template-columns: var(--gutter) minmax(0, 1fr) var(--right);
+  align-items: center;
+  min-height: 2.1rem;
+}
+
+.ftl-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  padding-right: 0.7rem;
+}
+
+.ftl-label .skill-icon,
+.ftl-icon {
+  flex: none;
+  width: 1.55rem;
+  height: 1.55rem;
+  border-radius: 0.3rem;
+  object-fit: cover;
+  background: #090a0d;
+}
+
+.ftl-icon.none,
+.ftl-label .skill-icon.none {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.ftl-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.ftl-label .tag {
+  flex: none;
+  margin-left: 0;
+}
+
+.ftl-lane {
+  position: relative;
+  height: 1.5rem;
+  border-radius: 0.25rem;
+  background: rgb(255 255 255 / 0.04);
+}
+
+.ftl-lane.casts {
+  height: 1.9rem;
+}
+
+.ftl-lane canvas {
+  display: block;
+}
+
+.ftl-buff {
+  position: absolute;
+  top: 0.15rem;
+  bottom: 0.15rem;
+  display: grid;
+  place-items: center;
+  min-width: 2px;
+  border-radius: 0.2rem;
+  overflow: hidden;
+}
+
+/* Acúmulos: texto escuro sobre a barra clara. */
+.ftl-buff span {
+  color: #0b0d10;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.ftl-right {
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  text-align: right;
+}
+
+.ftl-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.ftl-group + .ftl-group {
+  margin-top: 0.7rem;
+}
+
+.ftl-group-head {
+  padding: 0.2rem 0;
+  color: var(--label);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ftl-note {
+  margin: 0.3rem 0;
+  color: var(--muted);
+}
+
+.ftl-passives {
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.ftl-axis {
+  min-height: 1.7rem;
+  border-top: 1px solid var(--border);
+}
+
+.ftl-axis-lane {
+  position: relative;
+  height: 1.5rem;
+}
+
+.ftl-axis-lane span {
+  position: absolute;
+  top: 0.25rem;
+  transform: translateX(-50%);
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ftl-axis-lane span:first-child {
+  transform: none;
+}
+
+.ftl-axis-lane span.end {
+  transform: translateX(-100%);
+}
+
+/* O momento sob o mouse, em todas as partes. */
+.ftl-cursor {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  border-left: 1px dashed #9aa3af;
+  pointer-events: none;
+}
+
+.ftl-cursor-time {
+  position: absolute;
+  bottom: 0;
+  left: 0.3rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 0.3rem;
+  background: var(--accent-strong);
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ftl-tip {
+  position: fixed;
+  z-index: 50;
+  min-width: 12rem;
+  max-width: 24rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: #0b0d10;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.5);
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.tip-time {
+  margin-bottom: 0.2rem;
+  color: var(--muted);
+  font-weight: 650;
+}
+
+.tip-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.25rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.legend-item[aria-pressed="false"] {
+  color: #7d8490;
+  text-decoration: line-through;
+}
+
+.legend-item[aria-pressed="false"] .swatch,
+.legend-item[aria-pressed="false"] .line-swatch {
+  opacity: 0.3;
+}
+
+.line-swatch {
+  flex: none;
+}
+
+/* Liga e desliga (partes da linha do tempo, passivas). */
+.toggle {
+  padding: 0.3rem 0.85rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 1rem;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.toggle:hover {
+  color: var(--text);
+}
+
+.toggle[aria-pressed="true"] {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.segmented.small .segment {
+  padding: 0.22rem 0.7rem;
+}
+
+/* ── skills e jogador ──────────────────────────────────── */
+
+.stable-wrap {
+  overflow-x: auto;
+  padding-bottom: 0.3rem;
+}
+
+.stable {
+  min-width: calc(14rem + var(--cols) * 5.5rem);
+}
+
+.srow.head .sort {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.2rem;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--label);
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: 1.15;
+  text-align: right;
+  text-transform: inherit;
+}
+
+.srow.head .sort:hover,
+.srow.head .sort.on {
+  color: var(--text);
+}
+
+.best-skill {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  box-shadow: inset 3px 0 0 var(--accent-line);
+}
+
+.best-skill .skill-icon {
+  width: 2.7rem;
+  height: 2.7rem;
+}
+
+.best-skill > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.best-skill .label {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.best-skill b {
+  font-size: 1.15rem;
+}
+
+.pp-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+/* ── print ─────────────────────────────────────────────── */
+
+.btn-icon {
+  display: inline-grid;
+}
+
+.btn-icon svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.shot-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 1rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid rgb(74 222 128 / 0.4);
+  border-radius: var(--radius-sm);
+  background: rgb(74 222 128 / 0.08);
+  font-weight: 600;
+}
+
+.shot-note.bad {
+  border-color: rgb(255 138 138 / 0.45);
+  background: rgb(255 138 138 / 0.08);
+}
+
+.swatch {
+  width: 1rem;
+  height: 0.3rem;
+  border-radius: 0.2rem;
+  background: var(--series, #ffffff);
+}
+
+/* ── histórico ─────────────────────────────────────────── */
+
+.day {
+  margin-top: 0.7rem;
+  color: var(--label);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.hrow {
+  display: grid;
+  grid-template-columns: 11.6rem minmax(0, 1fr) auto 8.5rem 8.5rem;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.hrow:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+
+/* Luta comum: uma faixa cinza à esquerda, para separar das de chefe. */
+.hrow.common {
+  box-shadow: inset 3px 0 0 #6b7280;
+}
+
+.hparty {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+}
+
+.hboss {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.hboss b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 650;
+}
+
+.hstatus {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.hnum {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.hnum .muted {
+  font-size: 0.82rem;
+}
+
+/* Dungeon seguida: os chefes dela juntos, com uma linha azul à esquerda. */
+.run {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--chrome);
+  box-shadow: inset 3px 0 0 var(--accent-line);
+}
+
+.run-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.7rem;
+  padding: 0 0.3rem 0.25rem;
+}
+
+.run-head b {
+  font-weight: 650;
+}
+
+.solo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+@media (max-width: 900px) {
+  .hrow {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .hparty,
+  .hnum:last-child {
+    display: none;
+  }
+}
+
+/* ── recordes ──────────────────────────────────────────── */
+
+#records-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.records h3 {
+  font-size: 1.15rem;
+}
+
+.rtable {
+  display: flex;
+  flex-direction: column;
+}
+
+.rrow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 10rem 7rem 5rem;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.55rem 0.3rem;
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+
+.rrow.head {
+  padding-top: 0;
+  color: var(--label);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rrow:last-child {
+  border-bottom: 0;
+}
+
+/* ── personalizar ──────────────────────────────────────── */
+
+#page-settings .card {
+  max-width: 52rem;
+}
+
+.columns-pick {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 0.7rem 1rem;
+}
+
+.colors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.color-row {
+  display: grid;
+  grid-template-columns: minmax(0, 20rem) 3rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.8rem;
+}
+
+/* A barra como o overlay mostra: cor cheia, texto branco. */
+.preview {
+  --c: #3f3f46;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.3rem 0.8rem 0.3rem 0.35rem;
+  border-radius: var(--radius-sm);
+  background: var(--c);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.6);
+}
+
+.preview b {
+  flex: 1;
+}
+
+.preview .num {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+input[type="color"] {
+  width: 3rem;
+  height: 2.2rem;
+  padding: 0.15rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.4rem;
+  background: var(--surface-2);
+  cursor: pointer;
+}
+
+.contrast {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.contrast.ok {
+  color: var(--muted);
+}
+
+.contrast.low {
+  color: var(--danger);
+}
+
+#reset-colors {
+  align-self: flex-start;
+}

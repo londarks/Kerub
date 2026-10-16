@@ -1,0 +1,560 @@
+/* Tudo é medido em rem: o botão "Aa" muda --scale e a janela inteira cresce junto.
+   Cores escolhidas por contraste (WCAG): texto branco sobre as barras fica
+   entre 5:1 e 7,6:1, e o texto secundário sobre o fundo em 10,6:1. */
+:root {
+  color-scheme: dark;
+  --scale: 1.15;
+  --panel: rgba(255, 255, 255, 0.06);
+  --line: rgba(255, 255, 255, 0.14);
+  --text: #f4f6fa;
+  --muted: #c3c9d6;
+  --accent: #6cb6ff;
+  --row-h: 2.4rem;
+  /* Botão de transparência: só o fundo e as barras somem, o texto fica sólido. */
+  --alpha: 1;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  font-size: calc(12px * var(--scale));
+}
+
+html,
+body {
+  margin: 0;
+  background: transparent;
+  overflow: hidden;
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  line-height: 1.3;
+  color: var(--text);
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-size: 1rem;
+}
+
+.meter {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 0.85rem 0.85rem 1rem;
+  background: rgb(12 12 14 / calc(0.96 * var(--alpha)));
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  cursor: grab;
+}
+
+.meter.locked {
+  cursor: default;
+}
+
+/* Com o jogo aparecendo por trás, o texto ganha contorno escuro para não se
+   perder em cenário claro. */
+.meter.see-through,
+.meter.see-through li {
+  text-shadow: 0 0 2px #000, 0 0 4px #000, 0 1px 2px #000;
+}
+
+.meter.see-through .icon svg,
+.meter.see-through .hp {
+  filter: drop-shadow(0 0 1.5px #000);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* ── cabeçalho ─────────────────────────────────────────── */
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+h1 {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+h1 .title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#timer {
+  flex: none;
+  color: var(--muted);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.ping {
+  flex: none;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.ping.high {
+  color: #ff9b9b;
+}
+
+/* Print: verde quando deu, vermelho quando não. */
+.icon.done {
+  color: #4ade80;
+}
+
+.icon.failed {
+  color: #ff9b9b;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+button {
+  font: inherit;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+button:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.pill {
+  height: 1.8rem;
+  padding: 0 0.7rem;
+  margin-right: 0.15rem;
+  font-size: 0.95rem;
+  font-weight: 650;
+  color: var(--text);
+  border-radius: 0.9rem;
+  background: var(--panel);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  padding: 0;
+  border-radius: 0.5rem;
+}
+
+.icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.icon svg .fill {
+  fill: currentColor;
+  stroke: none;
+}
+
+#scale {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+#lock.on {
+  color: var(--accent);
+}
+
+/* ── alvo ──────────────────────────────────────────────── */
+
+.boss-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.35rem;
+}
+
+#target {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 650;
+}
+
+#hp-pct {
+  flex: none;
+  color: var(--muted);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.hp {
+  height: 0.5rem;
+  border-radius: 0.25rem;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+#hp-fill {
+  height: 100%;
+  border-radius: 0.25rem;
+  background: linear-gradient(90deg, #dc2626, #f97316);
+  transition: width 0.3s linear;
+}
+
+.time-left {
+  margin-top: 0.3rem;
+  color: var(--muted);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── totais ────────────────────────────────────────────── */
+
+.totals {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.total-damage {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.total-damage b {
+  margin-left: 0.3rem;
+  color: var(--text);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.total-dps {
+  color: var(--muted);
+  font-weight: 650;
+}
+
+.total-dps b {
+  color: var(--accent);
+  font-size: 1.9rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── tabela ────────────────────────────────────────────── */
+
+/* As colunas são as escolhidas no client (overlay.js monta --cols). */
+.thead,
+#rows li {
+  display: grid;
+  grid-template-columns: var(--cols, minmax(0, 1fr) 4.4rem 3.7rem 4.2rem 3rem);
+  align-items: center;
+  column-gap: 0.5rem;
+}
+
+.thead {
+  align-items: end;
+  padding: 0 0.7rem 0.35rem;
+  line-height: 1.15;
+  color: var(--muted);
+  font-size: 0.95rem;
+  font-weight: 650;
+  border-bottom: 1px solid var(--line);
+}
+
+.thead span:not(:first-child) {
+  text-align: right;
+}
+
+.thead i {
+  font-style: normal;
+  color: var(--accent);
+}
+
+ol {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+li {
+  --c: #3f3f46;
+  flex: none;
+  position: relative;
+  height: var(--row-h);
+  padding: 0 0.7rem 0 0.35rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* Fundo e barra num grupo só, para a transparência valer igual nos dois. */
+li .bg {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--c) 22%, #151518);
+  opacity: var(--alpha);
+}
+
+li .bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(90deg, var(--c), color-mix(in srgb, var(--c) 82%, black));
+  transition: width 0.3s ease-out;
+}
+
+li > span {
+  position: relative;
+  white-space: nowrap;
+  text-align: right;
+  font-weight: 600;
+}
+
+li .player {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  text-align: left;
+}
+
+li .badge-slot {
+  display: flex;
+  flex: none;
+}
+
+/* Ícone colorido da classe num quadradinho escuro, com contorno da cor dela:
+   sobre a barra da mesma cor ele continua aparecendo. */
+.badge {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 0.45rem;
+  background: #0a0a0c;
+  box-shadow: inset 0 0 0 1.5px var(--ring, #6b7280), 0 1px 2px rgba(0, 0, 0, 0.5);
+  color: var(--text);
+  font-weight: 700;
+  opacity: 1;
+}
+
+.badge img {
+  width: 1.45rem;
+  height: 1.45rem;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1px #000) drop-shadow(0 0 1px #000);
+}
+
+li .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 700;
+}
+
+li .dps {
+  font-weight: 750;
+}
+
+#rows li {
+  cursor: pointer;
+}
+
+#rows li:hover .bg,
+#rows li.selected .bg {
+  filter: brightness(1.25);
+}
+
+/* Linha aberta nos detalhes: contorno azul. */
+#rows li.selected::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 2px var(--accent);
+  pointer-events: none;
+}
+
+/* Sua linha: contorno branco por cima da barra. */
+li.me::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 2px #ffffff;
+  pointer-events: none;
+}
+
+li.empty,
+li.more {
+  display: block;
+  height: auto;
+  color: var(--muted);
+  font-weight: 600;
+  text-shadow: none;
+}
+
+li.empty {
+  padding: 0.9rem 0;
+  text-align: center;
+}
+
+li.more {
+  padding: 0.2rem 0.7rem 0;
+}
+
+/* ── detalhes de um jogador ────────────────────────────── */
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
+}
+
+.details-head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.details-who {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.details-who b {
+  font-size: 1.1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#details-sub {
+  color: var(--muted);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.skills {
+  margin: 0;
+}
+
+.skills li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 4.2rem 4.2rem 3rem;
+  align-items: center;
+  column-gap: 0.5rem;
+  height: 2.1rem;
+}
+
+.skill-name {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  text-align: left;
+}
+
+.skill-name .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.skill-icon {
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 0.3rem;
+  object-fit: cover;
+  background: #0a0a0c;
+}
+
+.skill-icon.none {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* ── rodapé ────────────────────────────────────────────── */
+
+footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+footer::before {
+  content: "";
+  flex: none;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* Botão de destaque: texto escuro sobre o azul, 8,7:1. */
+#install-npcap {
+  color: #0b1220;
+  background: var(--accent);
+  box-shadow: none;
+  text-shadow: none;
+}
+
+.grip {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 0.9rem;
+  height: 0.9rem;
+  cursor: ew-resize;
+  border-right: 2px solid rgba(255, 255, 255, 0.35);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.35);
+  border-bottom-right-radius: 0.3rem;
+}
+
+.locked .grip {
+  display: none;
+}

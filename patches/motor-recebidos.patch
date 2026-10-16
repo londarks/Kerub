@@ -1,0 +1,182 @@
+diff --git a/src-tauri/src/capture/stream_processor.rs b/src-tauri/src/capture/stream_processor.rs
+index 11b4f2d..cad7509 100644
+--- a/src-tauri/src/capture/stream_processor.rs
++++ b/src-tauri/src/capture/stream_processor.rs
+@@ -496,13 +496,9 @@ impl StreamProcessor {
+             // is the gate). HoT = 0x0B. This runs on framed perfect packets only, so
+             // there is no embedded over-read into adjacent records (the artifact that
+             // produced bogus multi-million single-tick "heals" in offline scans).
+-            self.data_storage.append_heal(
+-                actor_info.value,
+-                skill_code,
+-                amount_info.value as i64,
+-                effect_type == 0x0B,
+-                self.override_timestamp.unwrap_or_else(crate::clock::now_ms),
+-            );
++            let now = self.override_timestamp.unwrap_or_else(crate::clock::now_ms);
++            self.data_storage.append_heal(actor_info.value, skill_code, amount_info.value as i64, effect_type == 0x0B, now);
++            self.data_storage.append_heal_received(target_info.value, amount_info.value as i64, now);
+             return;
+         }
+ 
+@@ -1424,8 +1420,11 @@ impl StreamProcessor {
+                 break;
+             }
+ 
+-            // Skip 7-digit NPC skills
+-            if (1_000_000..=9_999_999).contains(&exact_skill_code) {
++            // 7-digit NPC skills: a monster's attack. Never anyone's damage
++            // done; what it deals to a player is kept as damage taken, below.
++            // Only from records read in place, not recovered by a scan.
++            let npc_skill = (1_000_000..=9_999_999).contains(&exact_skill_code);
++            if npc_skill && require_trusted {
+                 break;
+             }
+ 
+@@ -1443,7 +1442,7 @@ impl StreamProcessor {
+             // Hit type 1 (Miss) and 6 (Resist) carry no damage: count them on
+             // the skill and stop here, as the parser always did on these.
+             if no_value {
+-                if !require_trusted && actor_value != target_value {
++                if !npc_skill && !require_trusted && actor_value != target_value {
+                     if let Some(kind) = NoDamageHit::from_hit_type(dummy_type) {
+                         let skill = self.normalize_skill_id(exact_skill_code as i32);
+                         self.data_storage.append_no_damage_hit(target_value, actor_value, skill, kind);
+@@ -1532,7 +1531,7 @@ impl StreamProcessor {
+             // When the damage is in `second_value`, `first_value` is the actor's
+             // power scalar (see above). Recorded per actor so a summon whose spawn
+             // packet never arrived can still be tied to its owner.
+-            if !first_is_damage && (1_000..=200_000).contains(&first_value) {
++            if !npc_skill && !first_is_damage && (1_000..=200_000).contains(&first_value) {
+                 self.data_storage.note_power_scalar(actor_value, first_value);
+             }
+ 
+@@ -1710,7 +1709,12 @@ impl StreamProcessor {
+                 break;
+             }
+ 
+-            if crate::entity::skill_group::restores_resource(exact_skill_code as i32) {
++            if npc_skill {
++                if actor_value != target_value {
++                    let total = i64::from(final_damage) + i64::from(multi_hit_damage);
++                    self.data_storage.append_damage_taken(actor_value, target_value, total);
++                }
++            } else if crate::entity::skill_group::restores_resource(exact_skill_code as i32) {
+                 // MP (or another resource) restored, not HP: neither damage
+                 // nor healing. A Water Spirit's attack sends one of these to
+                 // its Spiritmaster (16990002, 20 MP), filed under 100011.
+@@ -1740,13 +1744,9 @@ impl StreamProcessor {
+                 // second_value, so `final_damage` is the correct heal amount. Recording
+                 // it as healing makes the HEAL view capture instant self-heals, not just
+                 // HoTs. (The cast-marker variant breaks out earlier on its and_result.)
+-                self.data_storage.append_heal(
+-                    actor_value,
+-                    resolved_skill_code,
+-                    final_damage as i64,
+-                    false,
+-                    self.override_timestamp.unwrap_or_else(crate::clock::now_ms),
+-                );
++                let now = self.override_timestamp.unwrap_or_else(crate::clock::now_ms);
++                self.data_storage.append_heal(actor_value, resolved_skill_code, final_damage as i64, false, now);
++                self.data_storage.append_heal_received(actor_value, final_damage as i64, now);
+             }
+ 
+             parsed_any = true;
+diff --git a/src-tauri/src/combat/data_storage.rs b/src-tauri/src/combat/data_storage.rs
+index 203a28f..dd6a07b 100644
+--- a/src-tauri/src/combat/data_storage.rs
++++ b/src-tauri/src/combat/data_storage.rs
+@@ -437,6 +437,8 @@ struct Inner {
+     mob_storage: HashMap<i32, i32>,
+     /// Healing done per (healer actor) -> (skill_code, is_hot) -> aggregate.
+     heal_storage: HashMap<i32, HashMap<(i32, bool), HealSkillData>>,
++    /// Healing received per target: (when, how much), like `HealSkillData::ticks`.
++    heal_received: HashMap<i32, Vec<(i64, i64)>>,
+     /// Spawn-time / observed-peak MAX HP per entity (denominator for the HP bar).
+     mob_hp_data: HashMap<i32, i32>,
+     /// Live CURRENT HP per entity, from the in-place `8D <id> 02 01 00 <u32>` feed.
+@@ -593,6 +595,7 @@ impl DataStorage {
+                 summon_storage: HashMap::new(),
+                 mob_storage: HashMap::new(),
+                 heal_storage: HashMap::new(),
++                heal_received: HashMap::new(),
+                 mob_hp_data: HashMap::new(),
+                 mob_current_hp: HashMap::new(),
+                 known_player_ids: HashSet::new(),
+@@ -1184,6 +1187,8 @@ impl DataStorage {
+                 e.total_heal += heal_amount as i64;
+                 e.tick_count += 1;
+                 e.ticks.push((pdp.timestamp(), heal_amount as i64));
++                let healed = summon_resolver::resolve(target_id, &inner.summon_storage);
++                inner.heal_received.entry(healed).or_default().push((pdp.timestamp(), heal_amount as i64));
+             }
+             return;
+         }
+@@ -1684,6 +1689,41 @@ impl DataStorage {
+         self.inner.read().mob_current_hp.get(&id).copied()
+     }
+ 
++    /// Damage a monster's own skill (`actor_id`) dealt to a player or a
++    /// player's summon (`target_id`): damage taken, on the fight it belongs to,
++    /// and nothing else. A summon of anyone's is no monster.
++    pub fn append_damage_taken(&self, actor_id: i32, target_id: i32, amount: i64) {
++        if amount <= 0 {
++            return;
++        }
++        let mut inner = self.inner.write();
++        if inner.summon_storage.contains_key(&actor_id) {
++            return;
++        }
++        let resolved_target = summon_resolver::resolve(target_id, &inner.summon_storage);
++        if !inner.known_player_ids.contains(&resolved_target) {
++            return;
++        }
++        if let Some(actor_data) = fight_of(&mut inner, resolved_target, Some(actor_id)) {
++            actor_data.damage_received += amount;
++            actor_data.hits_received += 1;
++        }
++    }
++
++    /// Record a heal tick `target_id` received, from anyone (a boss's own
++    /// Protection Circle included).
++    pub fn append_heal_received(&self, target_id: i32, amount: i64, timestamp: i64) {
++        if amount <= 0 || !self.is_plausible_entity_id(target_id) {
++            return;
++        }
++        self.inner.write().heal_received.entry(target_id).or_default().push((timestamp, amount));
++    }
++
++    /// Healing received per target, each tick as (when, how much).
++    pub fn get_heal_received_snapshot(&self) -> HashMap<i32, Vec<(i64, i64)>> {
++        self.inner.read().heal_received.clone()
++    }
++
+     /// Record a heal tick done by `actor_id` with `skill_code` (is_hot marks a HoT).
+     /// Keyed by the healer so "healing done" can be shown per player. Self-heals count.
+     pub fn append_heal(&self, actor_id: i32, skill_code: i32, amount: i64, is_hot: bool, timestamp: i64) {
+@@ -1778,6 +1818,7 @@ impl DataStorage {
+         inner.hp_floored_ids.clear();
+         inner.hp_reset_dummy_ids.clear();
+         inner.heal_storage.clear();
++        inner.heal_received.clear();
+         inner.current_target = 0;
+     }
+ 
+@@ -1797,6 +1838,7 @@ impl DataStorage {
+         inner.hp_floored_ids.clear();
+         inner.hp_reset_dummy_ids.clear();
+         inner.heal_storage.clear();
++        inner.heal_received.clear();
+         inner.current_target = 0;
+     }
+ 
+@@ -2067,6 +2109,9 @@ fn forget_entity(inner: &mut Inner, id: i32) {
+             e.ticks.extend(h.ticks);
+         }
+     }
++    if let Some(ticks) = inner.heal_received.remove(&id) {
++        inner.heal_received.entry(owner).or_default().extend(ticks);
++    }
+     let held: Vec<(i32, i32)> = inner.held_dot_ticks.keys().filter(|k| k.1 == id).copied().collect();
+     for key in held {
+         let mut ticks = inner.held_dot_ticks.remove(&key).unwrap_or_default();

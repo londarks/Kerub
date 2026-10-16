@@ -1,0 +1,24 @@
+diff --git a/src-tauri/src/combat/data_storage.rs b/src-tauri/src/combat/data_storage.rs
+--- a/src-tauri/src/combat/data_storage.rs
++++ b/src-tauri/src/combat/data_storage.rs
+@@ -1204,16 +1204,10 @@
+             inner.actor_jobs.entry(actor_id).or_insert(job);
+         }
+ 
+-        // Boss encounter auto-reset: if this target is a boss and the current
+-        // segment has no boss yet, clear the trash segment so boss gets clean data.
+-        let is_boss_target = inner.boss_entity_ids.contains(&target_id);
+-        if is_boss_target && !inner.has_boss_in_segment && !inner.target_combat.is_empty() {
+-            tracing::info!("Boss encounter auto-reset: boss entity {} hit, clearing trash segment", target_id);
+-            inner.target_combat.clear();
+-            inner.held_dot_ticks.clear();
+-            inner.dead_entity_ids.clear();
+-            inner.has_boss_in_segment = true;
+-        } else if is_boss_target {
++        // Kerub: the trash before a boss is kept. The boss's own fight is
++        // already apart (one target), and the meter saves every fight, trash
++        // included, so clearing it here lost the trash of every dungeon run.
++        if inner.boss_entity_ids.contains(&target_id) {
+             inner.has_boss_in_segment = true;
+         }
+ 

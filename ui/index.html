@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Kerub</title>
+  <link rel="stylesheet" href="client.css">
+  <link rel="stylesheet" href="chars.css">
+  <link rel="stylesheet" href="map.css">
+  <script src="shared.js" defer></script>
+  <script src="chart.js" defer></script>
+  <script src="client.js" defer></script>
+  <script src="chars.js" defer></script>
+  <script src="map.js" defer></script>
+</head>
+<body>
+  <div class="app">
+    <!-- Barra de título nossa, no lugar da do Windows: arrasta, minimiza,
+         maximiza (duplo clique também) e fecha. -->
+    <header class="titlebar" data-tauri-drag-region>
+      <div class="tb-brand" data-tauri-drag-region>
+        <img src="logo.png" alt="">
+        <span>Kerub</span>
+      </div>
+      <div class="tb-nav">
+        <button id="nav-back" class="tb-icon" title="Voltar (Alt + ←)" aria-label="Voltar" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+        </button>
+        <button id="nav-forward" class="tb-icon" title="Avançar (Alt + →)" aria-label="Avançar" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+      <!-- Procura personagem no site oficial; Enter abre os resultados. -->
+      <form id="search-form" class="tb-search" role="search" autocomplete="off">
+        <span id="search-icon" class="tb-search-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        </span>
+        <input id="search" type="text" placeholder="Procurar personagem…" spellcheck="false" aria-label="Procurar personagem pelo nome">
+        <button type="button" id="region-btn" class="tb-region" aria-haspopup="listbox" aria-expanded="false" title="Região da busca">
+          <span id="region-label">Todas</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </form>
+      <div id="region-menu" class="menu" role="listbox" aria-label="Região da busca" hidden></div>
+      <div class="tb-fill" data-tauri-drag-region></div>
+      <div id="game" class="tb-status" data-tauri-drag-region>
+        <span class="dot" aria-hidden="true"></span>
+        <span id="game-text">Iniciando…</span>
+      </div>
+      <button id="install-npcap" class="button primary tb-button" hidden>Instalar Npcap</button>
+      <div class="tb-controls">
+        <button id="win-min" title="Minimizar" aria-label="Minimizar">
+          <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M0 5h10"/></svg>
+        </button>
+        <button id="win-max" title="Maximizar" aria-label="Maximizar">
+          <svg viewBox="0 0 10 10" aria-hidden="true"><path id="win-max-icon" d="M0.5 0.5h9v9h-9z"/></svg>
+        </button>
+        <button id="win-close" class="close" title="Fechar o meter" aria-label="Fechar o meter">
+          <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M0 0l10 10M10 0L0 10"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <nav class="side" aria-label="Seções">
+      <span class="side-label">Medidor</span>
+      <button class="nav" data-page="live">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+        Ao vivo
+      </button>
+
+      <span class="side-label">Lutas</span>
+      <button class="nav" data-page="history">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        Histórico
+      </button>
+      <button class="nav" data-page="records">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></svg>
+        Recordes
+      </button>
+
+      <span class="side-label">Personagens</span>
+      <button class="nav" data-page="chars">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="4"/><path d="M3 21a7 7 0 0 1 11.5-5.4M17.5 17.5m-3 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0M22 22l-2.4-2.4"/></svg>
+        Procurar
+      </button>
+
+      <span class="side-label">Atreia</span>
+      <button class="nav" data-page="map">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg>
+        Mapa
+      </button>
+
+      <div class="side-foot">
+        <label class="switch">
+          <input id="overlay-toggle" type="checkbox">
+          <span class="track" aria-hidden="true"></span>
+          Overlay no jogo
+        </label>
+        <button id="scale" class="nav" title="Tamanho do texto (Ctrl + roda do mouse)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19l5-14 5 14M6 14h6M15 19l3-8 3 8M16 16.5h4"/></svg>
+          <span id="scale-text">Texto 100%</span>
+        </button>
+        <button class="nav" data-page="settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+          Personalizar
+        </button>
+      </div>
+    </nav>
+
+    <main id="main">
+      <!-- Ao vivo -->
+      <section id="page-live" class="page" hidden>
+        <div class="toolbar">
+          <div id="live-mode" class="segmented" role="radiogroup" aria-label="O que medir"></div>
+          <button id="live-reset" class="button">Zerar luta</button>
+        </div>
+        <div id="live-empty" class="empty-state">
+          <h2>Nenhuma luta ainda</h2>
+          <p>Quando alguém do grupo bater em algo, a luta aparece aqui. Toda luta fica gravada no
+            <b>Histórico</b> quando acaba (chefes, boneco e as lutas comuns), com ou sem o overlay ligado.</p>
+        </div>
+        <div id="live-fight"></div>
+      </section>
+
+      <!-- Histórico -->
+      <section id="page-history" class="page" hidden>
+        <header class="page-head">
+          <h2>Histórico</h2>
+          <div class="filters">
+            <label class="field-search">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+              <input id="history-filter" type="text" placeholder="Filtrar por chefe ou dungeon" aria-label="Filtrar lutas por chefe ou dungeon">
+            </label>
+            <label class="check"><input id="history-common" type="checkbox" checked> Lutas comuns</label>
+            <label class="check"><input id="history-train" type="checkbox"> Boneco de treino</label>
+          </div>
+        </header>
+        <div id="history-list"></div>
+      </section>
+
+      <!-- Uma luta do histórico -->
+      <section id="page-fight" class="page" hidden>
+        <button id="fight-back" class="link">← Histórico</button>
+        <div id="fight-view"></div>
+      </section>
+
+      <!-- Recordes -->
+      <section id="page-records" class="page" hidden>
+        <header class="page-head">
+          <h2>Recordes pessoais</h2>
+        </header>
+        <p class="hint">O seu melhor DPS e a luta mais rápida de cada chefe, por personagem. Só contam as lutas em que o chefe morreu.</p>
+        <div id="records-list"></div>
+      </section>
+
+      <!-- Procurar personagem (site oficial do AION 2) -->
+      <section id="page-chars" class="page" hidden>
+        <header class="page-head">
+          <div>
+            <h2 id="chars-title">Personagens</h2>
+            <p id="char-status" class="page-sub" aria-live="polite">Procure pelo nome na barra de cima.</p>
+          </div>
+        </header>
+        <div id="char-results"></div>
+        <div id="char-saved"></div>
+      </section>
+
+      <!-- Página de um personagem -->
+      <section id="page-char" class="page" hidden>
+        <div id="char-view"></div>
+      </section>
+
+      <!-- Mapa de Atreia -->
+      <section id="page-map" class="page map-page" hidden>
+        <aside class="map-panel" aria-label="Mapas e camadas">
+          <div class="map-head">
+            <div>
+              <h2 id="map-title">Mapa</h2>
+              <p id="map-sub" class="page-sub"></p>
+            </div>
+            <div id="map-race" class="segmented" role="radiogroup" aria-label="Facção"></div>
+            <div id="map-list" class="map-list" aria-label="Mapas"></div>
+            <label class="field-search map-search">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+              <input id="map-search" type="text" placeholder="Procurar área, monstro, NPC…" spellcheck="false" aria-label="Procurar no mapa">
+            </label>
+          </div>
+          <div id="map-results" class="map-scroll map-results" aria-live="polite" hidden></div>
+          <div id="map-layers" class="map-scroll map-layers"></div>
+        </aside>
+        <div class="map-stage">
+          <canvas id="map-canvas" tabindex="0" aria-label="Mapa. Arraste para mover; roda do mouse, + e − para o zoom; 0 mostra o mapa inteiro."></canvas>
+          <div id="map-filter" class="map-filter" hidden></div>
+          <div class="map-tools">
+            <button id="map-zoom-in" class="map-tool" title="Aproximar (+)" aria-label="Aproximar">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <button id="map-zoom-out" class="map-tool" title="Afastar (−)" aria-label="Afastar">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>
+            </button>
+            <button id="map-fit" class="map-tool" title="Mapa inteiro (0)" aria-label="Mostrar o mapa inteiro">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+            </button>
+          </div>
+          <div id="map-tip" class="map-tip" role="tooltip" hidden></div>
+          <div id="map-loading" class="map-loading" hidden></div>
+          <div id="map-error" class="map-error" hidden></div>
+        </div>
+      </section>
+
+      <!-- Personalizar -->
+      <section id="page-settings" class="page" hidden>
+        <header class="page-head">
+          <h2>Personalizar</h2>
+        </header>
+
+        <div class="card">
+          <h3>Overlay</h3>
+          <label class="switch">
+            <input id="set-overlay" type="checkbox">
+            <span class="track" aria-hidden="true"></span>
+            Mostrar o overlay por cima do jogo
+          </label>
+          <p class="hint">Se o jogo travar com o overlay, desligue: o meter continua gravando cada luta aqui no client.
+            A tecla <b>Del</b> esconde e mostra o overlay durante o jogo; ele não some sozinho.</p>
+          <label class="switch">
+            <input id="set-time-left" type="checkbox">
+            <span class="track" aria-hidden="true"></span>
+            Tempo para o chefe morrer no DPS atual
+          </label>
+          <div class="field">
+            <span id="set-rows-label">Jogadores no overlay</span>
+            <div id="set-rows" class="segmented" role="radiogroup" aria-labelledby="set-rows-label"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Colunas do overlay</h3>
+          <p class="hint">Menos colunas, janela mais estreita.</p>
+          <div id="set-columns" class="columns-pick"></div>
+        </div>
+
+        <div class="card">
+          <h3>Cor de cada classe</h3>
+          <p class="hint">A barra de cada jogador no overlay e aqui no client. O texto fica branco por cima: o meter avisa quando a cor deixa ele difícil de ler.</p>
+          <div id="set-colors" class="colors"></div>
+          <button id="reset-colors" class="button">Voltar às cores padrão</button>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
